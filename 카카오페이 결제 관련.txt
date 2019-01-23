@@ -1,0 +1,38 @@
+
+pg_token
+
+단건결제 - 결제준비
+
+[request]
+cid
+partner_order_id	최대 100자
+partner_user_id	최대 100자
+item_name
+quantity
+total_amount
+tax_free_amount
+approval_url	최대 255자
+cancel_url	최대 255자
+fail_url	최대 255자
+
+[response]
+tid	결제고유번호/20자
+next_redirect_pc_url
+
+
+
+
+주문내역조회
+cid
+payment_request_date
+
+
+
+--------------------------------------
+
+cid		10자
+quantity
+approval_url	최대 255자
+cancel_url	최대 255자
+fail_url		최대 255자
+pg_token
