@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <style>
+        #leveltest-question-container {
+            width: 90%;
+        }
+        .question-set {
+            background-color: bisque;
+        }
+        .question-content {
+            display: none;
+        }
+        .multiple-choice-icon {
+            background-image: url('multiple-choice-icon.png') no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <div class="inner">
+        <h5>레벨테스트</h5>
+        <p>
+            - 버튼을 클릭하면 문제가 생성됩니다.<br/>
+            - 원하는 위치에 문제를 생성하려면 버튼을 드래그 & 드랍하세요!<br/>
+            - 화살표를 클릭하고 드래그하면 순서를 바꿀 수 있습니다.<br/>
+            - 문제 블럭을 클릭하면 내용을 작성할 수 있습니다.<br/>
+        </p>
+        <button>객관식</button>
+        <button>주관식</button>
+        <button>삭제</button>
+        <div id="leveltest-container">
+            <div class="question-set" number="1">
+                <div class="question">
+                    <span class="numbering">1</span> 
+                    <span class="multiple-choice-icon">(객)</span> 
+                    <span class="question-done">다음중 웃다가 웃으면 생기는 일은?</span>
+                    <input type="text" class="question-edit" style="display:none" value="다음중 웃다가 웃으면 생기는 일은?"> 
+                    <span class="drag-icon ui-icon ui-icon-arrowthick-2-n-s">&</span>
+                </div>
+                <div class="answer" style="display:none">
+                    보기 1번 <input type="text" class="input-answer">
+                </div>
+            </div>
+            <div class="question-set" number="2">
+                <div class="question">
+                    <span class="numbering">2</span> 
+                    <span class="multiple-choice-icon">(객)</span> 
+                    <span class="question-done">대둔근 운동이 아닌 것은?</span>
+                    <input type="text" class="question-edit" style="display:none" value="대둔근 운동이 아닌 것은?"> 
+                    <span class="drag-icon ui-icon ui-icon-arrowthick-2-n-s"></span>
+                </div>
+                <div class="answer" style="display:none">
+                    보기 1번 <input type="text" class="input-answer">
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        $(document).ready(function() {
+
+            // question 부분이 클릭되면, slideToggle() 이 실행된다.
+            // 열린 상태라면 닫히고 (span), 닫힌 상태라면 열리고 (input).
+            // input 의 값이 바뀔 때, span 과 input 의 값은 서로 일치시킨다.
+
+            $('.question-set').on('click', function(event) {
+
+                $('input').on('click', function(event) {
+                    event.stopPropagation();
+                });
+
+                var object = this;
+                var index = $('.question-set').index(this);
+                var target = $('.answer')[index];   //object
+
+                $(target).slideToggle();
+
+                if($('.question-done')[index].style.display != "none") {
+                    $($('.question-done')[index]).hide();
+                    $($('.question-edit')[index]).show();
+                } else {
+                    $('.question-done')[index].textContent = $('.question-edit')[index].value;
+                    $($('.question-edit')[index]).hide();
+                    $($('.question-done')[index]).show();
+                }
+
+            });
+
+            $('.input-answer').on({
+                keydown: function(event) {
+                    var number = $(this).parents('.question-set').attr('number');
+                    var optionNumber = $('[number=' + number + '] .input-answer').index(this);
+                    
+                    console.log(number);
+                    console.log($('[number=' + number + '] .input-answer'));
+                    console.log($('[number=' + number + '] .input-answer').index(this));
+
+                    // 영역 내 마지막 input 태그에서 tab 입력 시, 새로운 input 태그가 생성된다.
+                    // 단, 영역 내에서 input 태그는 최대 5개까지 생성 가능.
+
+                    if(event.keycode == 9) {
+
+                    }
+                },
+            });
+
+            $('.drag-icon').on('mousedown', function() {
+
+                $('.qustion-set').sortable();
+
+            });
+
+
+        });
+    </script>
+</body>
+</html>

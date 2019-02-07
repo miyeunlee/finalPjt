@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+</head>
+<body>
+    기간:   
+    <input type="text" id="start-date">부터 
+    <input type="text" id="end-date">까지
+
+    <script>
+
+        $.datepicker.setDefaults($.datepicker.regional['ko']); 
+
+        $('#start-date').datepicker({
+
+            showOn: 'both',
+            buttonTest: '날짜 선택',
+            dateFormat: 'yy-mm-dd',
+            monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+            dayNames: ['일','월','화','수','목','금','토'],
+            // dayNamesShort: ['일','월','화','수','목','금','토'],
+            dayNamesMin: ['일','월','화','수','목','금','토'],
+            showMonthAfterYear: true,
+            // changeYear: true,
+            // changeMonth: true,
+            yearSuffix:'년',
+            onClose: function(chosenDate) {
+                $('#end-date').datepicker('option', 'minDate', chosenDate);
+            }
+
+        });
+
+        $('#end-date').datepicker({
+            showOn: 'both',
+            buttonTest: '날짜 선택',
+            dateFormat: 'yy-mm-dd',
+            monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+            dayNames: ['일','월','화','수','목','금','토'],
+            dayNamesMin: ['일','월','화','수','목','금','토'],
+            showMonthAfterYear: true,
+            yearSuffix:'년',
+            beforeShowDay: disableNonMatchingDays
+
+        })
+
+        function disableNonMatchingDays(date) {
+            
+            //  new Date() 사용해서 날짜로 변환하지 않으면 .getDay() 함수를 쓸 수 없다:
+                // Uncaught TypeError: $(...).val(...).getDay is not a function
+            var chosenDay = new Date($('#start-date').val()).getDay();
+            var day = date.getDay();
+
+            if(day != chosenDay) {
+                return [false];
+
+            } else return [true];
+            // else문 미작성 시 발생하는 에러:
+              // jquery-ui.js:9323 Uncaught TypeError: Cannot read property '0' of undefined
+        }
+    </script>
+</body>
+
+</html>
