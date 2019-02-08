@@ -12,7 +12,7 @@
         #leveltest-question-container {
             width: 90%;
         }
-        .question-set {
+        .question-group {
             background-color: bisque;
         }
         .question-content {
@@ -36,7 +36,7 @@
         <button>주관식</button>
         <button>삭제</button>
         <div id="leveltest-container">
-            <div class="question-set" number="1">
+            <div class="question-group" number="1">
                 <div class="question">
                     <span class="numbering">1</span> 
                     <span class="multiple-choice-icon">(객)</span> 
@@ -44,11 +44,16 @@
                     <input type="text" class="question-edit" style="display:none" value="다음중 웃다가 웃으면 생기는 일은?"> 
                     <span class="drag-icon ui-icon ui-icon-arrowthick-2-n-s">&</span>
                 </div>
-                <div class="answer" style="display:none">
-                    보기 1번 <input type="text" class="input-answer">
+                <div class="answer-group" style="display:none">
+                    <div class="answer">
+                        1) <input type="text" class="input-answer">
+                    </div>
+                    <div class="answer">
+                        2) <input type="text" class="input-answer">
+                    </div>
                 </div>
             </div>
-            <div class="question-set" number="2">
+            <div class="question-group" number="2">
                 <div class="question">
                     <span class="numbering">2</span> 
                     <span class="multiple-choice-icon">(객)</span> 
@@ -56,7 +61,8 @@
                     <input type="text" class="question-edit" style="display:none" value="대둔근 운동이 아닌 것은?"> 
                     <span class="drag-icon ui-icon ui-icon-arrowthick-2-n-s"></span>
                 </div>
-                <div class="answer" style="display:none">
+                <div class="answer-group" style="display:none">
+
                     보기 1번 <input type="text" class="input-answer">
                 </div>
             </div>
@@ -70,15 +76,15 @@
             // 열린 상태라면 닫히고 (span), 닫힌 상태라면 열리고 (input).
             // input 의 값이 바뀔 때, span 과 input 의 값은 서로 일치시킨다.
 
-            $('.question-set').on('click', function(event) {
+            $('.question-group').on('click', function(event) {
 
                 $('input').on('click', function(event) {
                     event.stopPropagation();
                 });
 
                 var object = this;
-                var index = $('.question-set').index(this);
-                var target = $('.answer')[index];   //object
+                var index = $('.question-group').index(this);
+                var target = $('.answer-group')[index];   //object
 
                 $(target).slideToggle();
 
@@ -95,7 +101,7 @@
 
             $('.input-answer').on({
                 keydown: function(event) {
-                    var number = $(this).parents('.question-set').attr('number');
+                    var number = $(this).parents('.question-group').attr('number');
                     var optionNumber = $('[number=' + number + '] .input-answer').index(this);
                     
                     console.log(number);
@@ -106,7 +112,8 @@
                     // 단, 영역 내에서 input 태그는 최대 5개까지 생성 가능.
 
                     if(event.keycode == 9) {
-
+                        // 새로운 보기 문항을 append 한다.
+                        console.log('tab 입력');
                     }
                 },
             });

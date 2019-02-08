@@ -1,6 +1,18 @@
 -- https://recoveryman.tistory.com/181
 -- https://blog.ngelmaum.org/entry/lab-note-sql-join-method
 
+
+-- update count
+update study set review_count = (select count(*) from review where study.study_id = review.study_id) where study_id <> 'x';
+-- update average
+update study set average_score = ifnull((select round(avg(score),2) from review where study.study_id = review.study_id group by study_id), -1) where study_id <> 'x';
+
+select * from study where study_id = 'PB00001';
+select * from review where study_id = 'PB00001';
+
+select * from study_member where id = 'bbb123' and study_member_status_code in ('LE', 'ME');
+select * from member where id = 'bbb123';
+
 select * from study_member where id = 'aaa123' and study_member_status_code in ('LE', 'ME');
 select * from review where study_id = "BO00001";
 
@@ -13,7 +25,7 @@ select * from review;
 select *, datediff(end_date, start_date), timediff(end_time, start_time) from study;
 
 
--- 스터디 + 총 리뷰 수, 평균 평점 -- 중복 --> left outer join 으로 바꿀 것
+-- 스터디 + 총 리뷰 수, 평균 평점, 코드 -- 중복 --> left outer join 으로 바꿀 것
 select s.study_id, name, leader_id,
     s.TYPE_CODE, tc.CODE_VALUE_KOREAN TYPE_CODE_KOREAN, 
     s.ONOFF_CODE, oc.CODE_VALUE_KOREAN ONOFF_CODE_KOREAN,
@@ -23,7 +35,7 @@ select s.study_id, name, leader_id,
     s.DAY_CODE, dc.CODE_VALUE_KOREAN DAY_CODE_KOREAN, 
     study_count, start_time, end_time, enroll_capacity, enroll_actual, introduction, has_leveltest, disband_date, post_date, review_count, average_score
 	from (select * from study ) s left outer join 
-    (select study_id, count(*) as review_count, avg(score) as average_score from review r group by study_id) r on s.study_id = r.study_id,
+    (select study_id, count(*) as review_count, round(avg(score),2) as average_score from review r group by study_id) r on s.study_id = r.study_id,
     type_cd tc,
     onoff_cd oc,
     study_status_cd ssc,
@@ -36,6 +48,25 @@ select s.study_id, name, leader_id,
         and s.LEVEL_CODE = lc.LEVEL_CODE
         and s.DAY_CODE = dc.DAY_CODE;
 
+-- study_view
+create view study_view 
+	as (select s.*,
+	datediff(end_date, start_date) date_diff,
+    timediff(end_time, start_time) time_diff,
+    ifnull(review_count, 0) review_count,
+    ifnull(average_score, -1) average_score
+	from (select * from study ) s left outer join 
+    (select study_id, count(*) as review_count, round(avg(score),2) as average_score from review r group by study_id) r on s.study_id = r.study_id);
+
+-- 스터디 + 총 리뷰 수, 평균 평점 (코드 제외)
+select s.*,
+	datediff(end_date, start_date) date_diff,
+    timediff(end_time, start_time) time_diff,
+    review_count,
+    ifnull(average_score,-1)
+	from (select * from study ) s left outer join 
+    (select study_id, count(*) as review_count, round(avg(score),2) as average_score from review r group by study_id) r on s.study_id = r.study_id;
+    
 
 -- 테스트
 select * from study s inner join
