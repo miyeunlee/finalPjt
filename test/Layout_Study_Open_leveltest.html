@@ -6,8 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script> -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <style>
         #leveltest-question-container {
             width: 90%;
@@ -99,6 +102,7 @@
 
             });
 
+            // 
             $('.input-answer').on({
                 keydown: function(event) {
                     var number = $(this).parents('.question-group').attr('number');
@@ -118,9 +122,15 @@
                 },
             });
 
+            // 문제를 sortable 하게 만든다.
+            // https://jqueryui.com/sortable/
+            // https://api.jqueryui.com/sortable/
+            // https://demos.telerik.com/kendo-ui/sortable/index
+            // https://www.webdesignerdepot.com/2013/08/how-to-use-html5s-drag-and-drop/
+            // https://www.w3schools.com/html/html5_draganddrop.asp
             $('.drag-icon').on('mousedown', function() {
 
-                $('.qustion-set').sortable();
+                $('.qustion-group').sortable();
 
             });
 
