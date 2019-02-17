@@ -3,118 +3,385 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 참고:  https://jqueryui.com/sortable/#portlets -->
+  <!-- 설명:  jQuery UI 의 sortable - portlets 예제를 기반으로 수정 / 발전시킨 코드 -->
   <title>레벨테스트 테스트</title>
-  <!-- <link rel="stylesheet" href="./css/jquery-ui.css"> -->
-  <!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
   <style>
-  body {
-    min-width: 520px;
-  }
-  .column {
-    width: 170px;
-    float: left;
-    padding-bottom: 100px;
-  }
-  .portlet {
-    margin: 0 1em 1em 0;
-    padding: 0.3em;
-    border: 1px solid #c5c5c5;
-    border-radius: 3px;
-  }
-  .portlet-header {
-    padding: 0.2em 0.3em;
-    margin-bottom: 0.5em;
-    position: relative;
+    body {
+      min-width: 520px;
+    }
+    .leveltest-container {
+      width: 400px;
+      float: left;
+      padding-bottom: 100px;
 
-    border: 1px solid #dddddd;
-    background: #e9e9e9;
-    color: #333333;
-    font-weight: bold;
+      /* 참고:  https://stackoverflow.com/a/34471088 */
+      /* 문제:  .leveltest-toggle 을 더블클릭하면 컨테이너 내부의 텍스트가 셀렉트 되는 문제 발생 */
+      /* 해결:  아래의 스타일을 추가함. (본문 4줄에 해당하는 내용) */
+      /* 한계:  텍스트를 셀렉트 해야 할 경우에도 선택되지 않는 경우를 고려해보았으나, 어차피 sortable 적용으로 인해 선택이 불가하며 레벨테스트 취지에도 맞지 않으므로 아래처럼 적용하기로 함. */
+      /* 추가:  $(".leveltest-container").on('dbclick', function(e) { e.preventDefault(); return false; }); 처럼 script 단에서 처리하는 방법도 있음. */
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .leveltest {
+      margin: 0 1em 1em 0;
+      padding: 0.3em;
+      border: 1px solid #c5c5c5;
+      border-radius: 3px;
+      background-color: white; /* 일단! */
+    }
+    .leveltest-placeholder {
+      border: 1px dotted black;
+      margin: 0 1em 1em 0;
+      height: 80px;
+    }
+    input {
+      background-color: transparent;
+      border: dotted 1px;
+    }
+    input.question-edit {
+      width: 88%;
+    }
+    input.question-choice-option {
 
-  }
-  .portlet-toggle {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    margin-top: -8px;
-  }
-  .portlet-content {
-    padding: 0.4em;
-  }
-  .portlet-placeholder {
-    border: 1px dotted black;
-    margin: 0 1em 1em 0;
-    height: 50px;
-  }
-
-  
-
-  
+    }
+    .question {
+      padding: 0.2em 0.3em;
+      margin-bottom: 0.5em;
+      position: relative;
+      border: 1px solid #dddddd;
+      background: #e9e9e9;
+      color: #333333;
+      font-weight: bold;
+    }
+    .question-numbering {
+      display: inline-block;
+      vertical-align: top;
+      height: 100%;
+      border: none;
+      width: 1em;
+    }
+    .question-content {
+      display: inline-block;
+      width: 80%;
+      margin-right: 20px;
+      padding-block-end: 1px;
+      padding-block-start: 1px;
+      padding-bottom: 1px;
+      padding-top: 1px;
+    }
+    .question-edit {
+      font-family: "Malgun Gothic";
+      font-size: 1rem;
+      color: #333333;
+      font-weight: bold;
+    }
+    .leveltest-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 0;
+      transform: translateY(-60%);
+    }
+    .icon-minus::before {
+      content: "\f068";
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      color: black;
+      width: 100%;
+      padding: 0.2em 0.3em;
+    }
+    .icon-plus::before {
+      content: "\f067";
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      color: black;
+      width: 100%;
+      padding: 0.2em 0.3em;
+    }
+    .question-choice {
+      padding: 0.4em;
+    }
+    .choice-numbering {
+      margin-right: 0.5rem;
+      margin-left: 1rem;
+    }
+    .choice-numbering:after {
+      content: ")";
+    }
+    .icon-remove {
+      display: none;
+    }
+    .icon-remove:hover {
+      cursor: pointer;
+    }
+    .icon-remove:after {
+      content: "\F00D";
+      font-family: "Font Awesome 5 Free";
+      font-weight: 600;
+      color: black;
+      font-size: 0.8rem;
+      vertical-align: middle;
+      margin-left: 5px;
+    }
+    .question-choice-placeholder {
+      font-size: 0.8em;
+      border-radius: 80%;
+      background-color: grey;
+    }
+    .inline-block {
+      display: inline-block;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script>
-  $( function() {
-    $( ".column" ).sortable({
-    //   connectWith: ".column",
-      handle: ".portlet-header",
-      cancel: ".portlet-toggle",
-      placeholder: "portlet-placeholder ui-corner-all"
-    });
- 
-    $( ".portlet" )
-      .addClass( "ui-widget ui-widget-content ui-helper-clearfix" )
-      .find( ".portlet-header" )
-        .addClass( "ui-widget-header ui-corner-all" )
-        .prepend( "<span class='ui-icon ui-icon-minusthick portlet-toggle'></span>");
- 
-    $( ".portlet-toggle" ).on( "click", function() {
-      var icon = $( this );
-      icon.toggleClass( "ui-icon-minusthick ui-icon-plusthick" );
-      icon.closest( ".portlet" ).find( ".portlet-content" ).toggle();
-    });
-  } );
+    // 참고:  https://theqoop.tistory.com/295
+    // 설명:  $(document).ready(function() {}); 과 같으나, 편의상 (document).ready 부분을 생략해서 쓴 것. (아래 1줄)
+    $( function() {
+
+      enableSortable();
+      enableToggle();
+      makeQuestion();
+      addQuestionChoice();
+      removeQuestionChoiceOption();
+
+    } );
+
+    function enableSortable() {
+
+      console.log('Entered enableSortable()...');
+
+      $( ".leveltest-container" ).sortable({
+        handle: ".question, .question-choice, .question-answer",
+        cancel: ".leveltest-toggle, .question-edit, .question-choice-option, .question-answer > select",
+        placeholder: "leveltest-placeholder",
+        stop: addNumberToQuestions
+      });
+    }
+
+    function addNumberToQuestions() {
+
+      console.log('Entered addNumberToQuestions()...');
+
+      // 참고:  https://stackoverflow.com/questions/3546659/how-can-i-count-the-number-of-children
+      // 설명:  해당 요소의 개수를 구할 때는 셀렉터로 선택한 후 length 를 호출하면 된다.
+      for(let i = 0; i < $('.leveltest').length; i++) {
+        $($('.leveltest')[i] ).find('.question-numbering').text( i + 1 );
+      }
+    }
+
+    function enableToggle() {
+
+      // 참고:  https://stackoverflow.com/a/40949843, https://stackoverflow.com/a/9331127, https://codepedia.info/click-event-for-dynamic-button-jquery/
+      // 원본:  $(".leveltest-toggle").on( "click", function() {
+      // 문제:  맨 마지막에 추가되는 요소의 인덱스를 기준으로, 짝/홀수의 요소만 토글되는 에러 발생.
+      // 원인:  DOM 에 새로 추가되는 요소에는 이벤트가 적용되지 않아 발생한 내부적인 에러로 추정. 이벤트가 발생하는 모든 요소를 감싸는 부모 요소에 이벤트를 등록하면 해결된다고 한다. (ex. document, body 등)
+      // 해결:  코드를 아래처럼 변경함. (1줄에 해당)
+      $(".leveltest-container").on( "click", ".leveltest-toggle", function() {
+        
+        console.log('Entered enableToggle()...');
+
+        var icon = $( this );
+        var $qContent = icon.siblings(".question-content");
+        var $qEdit = icon.siblings(".question-edit");
+        var text = "";
+
+        icon.toggleClass( "icon-plus icon-minus" );
+        icon.closest( ".leveltest" ).find( ".question-choice, .question-answer" ).toggle();
+        
+        if($qContent.css('display')!='none') {
+          text = $qContent.text();
+          $qEdit.val(text);
+
+        } else {
+          text = $qEdit.val();
+          $qContent.text(text);
+        }
+
+        $qContent.toggle();
+        $qEdit.toggle();
+      });
+    }
+
+    function makeQuestion() {
+      
+      $('.leveltest-maker').on('click', function() {
+
+        console.log('Entered makeQuestion()...');
+
+        var $newQuestion = "";
+        var nextNumber = $('.leveltest').length + 1;
+
+        if($(this).hasClass("multiple-choice-leveltest-maker")) {
+          $newQuestion = $("<div class='leveltest'><div class='question'><input type='hidden' name='leveltestTypeCode' value='MC'><input            class='numbering question-numbering' name='questonNumber' readonly value='" + 
+              nextNumber + "'>&nbsp;<span class='question-content'>+ 를 클릭해서 객관식 문제를 수정하세요!</span><input class='question-edit' name='content' type='text' style='display:none'><span class='icon icon-plus leveltest-toggle'></span></div><div class='question-choice' style='display:none'><div class='question-choice-group'><span class='numbering choice-numbering'>1</span><input class='question-choice-option' type='text' value='Lorem'/></div><div class='question-choice-group'><span class='numbering choice-numbering'>2</span><input class='question-choice-option' type='text' value='ipsum'/></div><div class='question-choice-placeholder'>보기를 추가하려면 클릭하세요!</div></div><div class='question-answer' style='display:none'>정답: <select name='correctAnswer'><option>1</option><option>2</option><option>3</option><option>4</option></select></div></div>");
+
+        } else {
+          $newQuestion = $("<div class='leveltest'><div class='question'><input type='hidden' name='leveltestTypeCode' value='SA'><input            class='numbering question-numbering' name='questonNumber' readonly value='" + 
+              nextNumber + "'>&nbsp;<span class='question-content'>+ 를 클릭해서 주관식 문제를 수정하세요!</span><input class='question-edit' name='content' type='text' style='display:none'><span class='icon icon-plus leveltest-toggle'></span></div><div class='question-answer' style='display:none'>정답: <input name='correctAnswer' class='question-answer-input' type='text' value='nulla'></div></div>");
+
+        }
+        $('.leveltest-container').append($newQuestion);
+      });
+    }
+    
+    function addQuestionChoice() {
+
+      $('.leveltest-container').on('click', '.question-choice-placeholder', function() {
+
+        console.log('Entered addQuestionChoice()...');
+
+        var nextNumber = $(this).prev().find('.choice-numbering').text() - 0 + 1;
+
+        if(nextNumber <= 5) {
+          var $newChoiceOption = $("<div class='question-choice-group'><span class='numbering choice-numbering'>" + nextNumber + "</span><input class='question-choice-option' type='text' placeholder='보기의 내용을 입력하세요'/><span class='icon icon-remove'></span></div>");
+
+          // 참고:  http://blog.naver.com/PostView.nhn?blogId=oihijkoh&logNo=220958834611&parentCategoryNo=&categoryNo=3&viewDate=&isShowPopularPosts=true&from=search
+          // 원본:  $(this).prepend($newChoiceOption);
+          // 문제:  prepend 함수를 사용해서 newChoiceOption 이 question-choice-placeholder 에 생성 되었음.
+          // 해결:  before 함수로 변경.
+          // 정리:  before - (prepend - 요소 - append) - after
+          $(this).before($newChoiceOption);
+          $(this).parent().next().find("select").append("<option>" + nextNumber + "</option>");
+          // console.log($(this).parent().next().find("select"));
+
+          if(nextNumber === 5) {
+            $(this).remove();
+          }
+
+        } else {
+          return false;
+        }
+
+      });
+    }
+
+    function removeQuestionChoiceOption() {
+
+      $('.leveltest-container').on('mouseenter mouseleave', '.question-choice-group', function() {
+
+        console.log('Entered removeQuestionChoiceOption()... 1');
+
+        $(this).find('.icon-remove').toggleClass("inline-block");
+      });
+
+      $('.leveltest-container').on('click', '.icon-remove', function() {
+
+        console.log('Entered removeQuestionChoiceOption()... 2');
+
+        var $questionChoiceGroups = $(this).parent().parent().children('.question-choice-group');
+        var removedNumber = $(this).siblings('.choice-numbering').text() - 0;
+        var totalAfterRemoved = $questionChoiceGroups.length - 1;
+
+        // 참고:  https://stackoverflow.com/a/18355410
+        // 확인:  $.when($(this).parent().remove()).then(console.log('지우기 완료'));
+        $(this).parent().parent().next().find("option:last").remove();
+        $(this).parent().remove();
+        
+
+        if(removedNumber !== totalAfterRemoved + 1) {
+          // 원본:  for(let i=removedNumber-1; i < totalAfterRemoved; i++) {
+          // 문제:  $questionChoiceGroups 에 저장된 요소 배열은 삭제된 요소를 포함하기에 인덱스가 안 맞았음.
+          for(let i=removedNumber; i <= totalAfterRemoved; i++) {
+            $questionChoiceGroups[i].getElementsByClassName('choice-numbering')[0].textContent = i;
+          }
+        }
+
+        if(totalAfterRemoved === 4) {
+          // 1번:  $questionChoiceGroups.last().after("<div class='question-choice-placeholder'>보기를 추가하려면 클릭하세요!</div>");
+          // 문제: 5)번 보기를 지웠을 때는 동작하지 않음.
+          // 2번:  $questionChoiceGroups.eq(3).after("<div class='question-choice-placeholder'>보기를 추가하려면 클릭하세요!</div>");
+          // 문제: 5)번 보기를 지우지 않았을 때는 동작하지 않음. 
+          $questionChoiceGroups.parent().append("<div class='question-choice-placeholder'>보기를 추가하려면 클릭하세요!</div>");
+        }
+      });
+
+    }
+
+
+    // CSS
+    // - toggle 효과에 애니메이션을 추가한다. --> 별로라서 안 함.
+    // - input 요소의 입력칸을 투명하게 바꾼다. --> 적용 완료
+      // https://freefrontend.com/css-input-text/ 참고하기
+    // - input 요소의 height 를 컨텐츠 높이에 맞춘다. (작성중)
+      // https://stackoverflow.com/questions/30520858/dynamically-adjust-html-text-input-width-to-content/30520997
+      // $('input').on('keypress', function() {
+      //   console.log($(this).val().length);
+      //   // $(this).css("height", ($(this).val().length + 1)*);
+      // });
+    // - span 과 input 의 font-size, font-style 등을 동일하게 맞춘다.
+    // - input 글자 수 제한
+
+    // insert 를 고려하여 input 요소의 name 을 설정한다.
+    // 참고:  http://noveloper.github.io/blog/spring/2015/02/16/how-mapping-to-model-arrayvalue.html, https://lge920904.tistory.com/137
+
+    // 페이지 이동 시 DOM 까지 저장한다.
+    // 참고:  https://stackoverflow.com/a/25532647, https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/494348#494348
+
+    // 자바 스크립트로 세션에 값 저장하기
+    // 참고:  https://lemonnism.tistory.com/5
+
+    //  3. question-choice-group 동적으로 생성 by tab --> by button
+      //  answer 도 같이 생성되어야 한다.
+      //  hover 시 삭제 버튼이 나와야 한다.
+
   </script>
 </head>
 <body>
  
-<div class="column">
- 
-  <div class="portlet">
-    <div class="portlet-header">Feeds</div>
-    <div class="portlet-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit</div>
+  <div class="leveltest-maker-container">
+    <button class="leveltest-maker multiple-choice-leveltest-maker">객관식 문제 블록</button>
+    <button class="leveltest-maker short-answer-leveltest-maker">주관식 문제 블록</button>
   </div>
- 
-  <div class="portlet">
-    <div class="portlet-header">News</div>
-    <div class="portlet-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit</div>
+
+  <div class="leveltest-container">
+  
+    <div class="leveltest">
+      <div class="question">
+        <input type="hidden" name="leveltestTypeCode" value="MC">
+        <input class="numbering question-numbering" name="questonNumber" readonly value="1">
+        <span class="question-content">Feeds</span>
+        <input class="question-edit" name="content" type="text" style="display:none"> 
+        <span class='icon icon-plus leveltest-toggle'></span>
+      </div>
+      <div class="question-choice" style="display:none">
+        <div class="question-choice-group">
+          <span class="numbering choice-numbering">1</span><input class="question-choice-option" type="text"  placeholder='보기의 내용을 입력하세요'/>
+        </div>
+        <div class="question-choice-group">
+          <span class="numbering choice-numbering">2</span><input class="question-choice-option" type="text"  placeholder='보기의 내용을 입력하세요'/>
+        </div>
+        <div class="question-choice-placeholder">보기를 추가하려면 클릭하세요!</div>
+      </div>
+      <div class="question-answer" style="display:none">
+        정답: 
+        <select name="correctAnswer">
+          <option>1</option>
+          <option>2</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="leveltest">
+        <div class="question">
+          <input type="hidden" name="leveltestTypeCode" value="SA">
+          <input class="numbering question-numbering" name="questonNumber" readonly value="2">
+          <span class="question-content">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nam rem numquam tenetur. Laboriosam quam iure eos beatae ad pariatur, culpa molestiae accusamus corrupti quasi placeat maxime fugiat optio in nulla!</span>
+          <input class="question-edit" name="content" type="text" style="display:none"> 
+          <span class="icon icon-plus leveltest-toggle"></span>
+        </div>
+        <div class="question-answer" style="display:none">
+            정답: 
+            <input name="correctAnswer" class="question-answer-input" type="text" value="nulla">
+        </div>
+    </div>
+
   </div>
- 
-</div>
- 
-<div class="column">
- 
-  <div class="portlet">
-    <div class="portlet-header">Shopping</div>
-    <div class="portlet-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit</div>
-  </div>
- 
-</div>
- 
-<div class="column">
- 
-  <div class="portlet">
-    <div class="portlet-header">Links</div>
-    <div class="portlet-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit</div>
-  </div>
- 
-  <div class="portlet">
-    <div class="portlet-header">Images</div>
-    <div class="portlet-content">Lorem ipsum dolor sit amet, consectetuer adipiscing elit</div>
-  </div>
- 
-</div>
- 
+
+  <input type="text" name="studyId" value="test" readonly>
  
 </body>
 </html>
